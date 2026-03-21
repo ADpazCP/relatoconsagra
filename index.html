@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Relatório de Consagrados</title>
+    <title>SISTEMA ADPAZ - Gestão de Consagrados</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { background-color: #f0f2f5; padding: 12px; font-family: 'Segoe UI', Tahoma, sans-serif; }
         .main-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* Cabeçalho Compacto */
         .header-compacta { 
             border-bottom: 2px solid #3273dc; 
             margin-bottom: 20px; 
@@ -28,7 +27,6 @@
         .badge-count { background: #3273dc; color: white; padding: 6px 15px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; }
         .btn-sync { margin-left: 8px; }
 
-        /* Estilo da Ficha (Modal) */
         .detail-item { border-bottom: 1px solid #f0f0f0; padding: 10px 0; }
         .detail-label { font-size: 0.65rem; color: #888; text-transform: uppercase; font-weight: bold; margin-bottom: 2px; }
         .detail-value { font-size: 1rem; color: #333; }
@@ -88,12 +86,10 @@
                         <th style="width: 50px;">Nº</th>
                         <th>Candidato</th>
                         <th>Congregação</th>
-                        <th>Cargo</th>
-                        <th>Critério</th>
                     </tr>
                 </thead>
                 <tbody id="tabelaBody">
-                    <tr><td colspan="5" class="has-text-centered">Aguardando dados...</td></tr>
+                    <tr><td colspan="3" class="has-text-centered">Aguardando dados...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -107,8 +103,7 @@
             <p class="modal-card-title is-size-6">Ficha Individual do Consagrado</p>
             <button class="delete" aria-label="close" onclick="fecharModal()"></button>
         </header>
-        <section class="modal-card-body px-5" id="conteudoFicha">
-            </section>
+        <section class="modal-card-body px-5" id="conteudoFicha"></section>
         <footer class="modal-card-foot py-2 is-justify-content-center">
             <button class="button is-link is-small" onclick="fecharModal()">Fechar</button>
         </footer>
@@ -131,11 +126,9 @@
     function receberDados(dados) {
         dadosLocais = dados;
         document.getElementById('btnSync').classList.remove('is-loading');
-        
         gerarFiltroDinamico('fCong', 16, "Congregações");
         gerarFiltroDinamico('fCargo', 17, "Cargos");
         gerarFiltroDinamico('fCrit', 18, "Critérios");
-        
         renderizar(dados);
     }
 
@@ -161,8 +154,6 @@
                 <td class="is-size-7 has-text-grey">${index + 1}</td>
                 <td class="nome-link" onclick="abrirFicha(${index})">${item[1]}</td>
                 <td>${item[16] || '-'}</td>
-                <td><span class="tag is-info is-light">${item[17] || '-'}</span></td>
-                <td>${item[18] || '-'}</td>
             `;
             corpo.appendChild(tr);
         });
@@ -186,7 +177,9 @@
     function abrirFicha(idx) {
         const p = dadosLocais[idx];
         const box = document.getElementById('conteudoFicha');
-        
+        const estadoCivil = p[7] || '---';
+        const nomeConjuge = p[8] && p[8].trim() !== "" && p[8].toUpperCase() !== "NÃO INFORMADO" ? p[8] : null;
+
         box.innerHTML = `
             <div class="detail-item">
                 <p class="detail-label">Candidato</p>
@@ -201,8 +194,11 @@
             </div>
 
             <div class="detail-item">
-                <p class="detail-label">Cônjuge</p>
-                <p class="detail-value">${p[8] || 'Não informado'}</p>
+                <p class="detail-label">Estado Civil ${nomeConjuge ? '/ Cônjuge' : ''}</p>
+                <p class="detail-value">
+                    <span class="has-text-weight-semibold">${estadoCivil}</span>
+                    ${nomeConjuge ? `<span class="has-text-grey mx-2">|</span> ${nomeConjuge}` : ''}
+                </p>
             </div>
 
             <div class="detail-item">
