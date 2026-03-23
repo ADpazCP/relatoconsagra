@@ -19,10 +19,11 @@
             align-items: center;
         }
 
-        .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        th { background-color: #3273dc !important; color: white !important; white-space: nowrap; font-size: 0.75rem; text-transform: uppercase; }
-        .nome-link { color: #3273dc; cursor: pointer; font-weight: bold; }
-        .nome-link:hover { text-decoration: underline; color: #1d4ed8; }
+        .table-container { overflow-x: hidden; }
+        th { background-color: #3273dc !important; color: white !important; font-size: 0.75rem; text-transform: uppercase; }
+        
+        .nome-link { color: #3273dc; font-weight: bold; font-size: 1rem; }
+        .cong-sub { font-size: 0.8rem; color: #666; margin-top: 2px; }
         
         .badge-count { background: #3273dc; color: white; padding: 6px 15px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; }
         .btn-sync { margin-left: 8px; }
@@ -31,6 +32,10 @@
         .detail-label { font-size: 0.65rem; color: #888; text-transform: uppercase; font-weight: bold; margin-bottom: 2px; }
         .detail-value { font-size: 1rem; color: #333; }
         
+        /* Ajuste para toque no celular */
+        .tr-clicavel { cursor: pointer; transition: background 0.2s; }
+        .tr-clicavel:active { background-color: #f5faff; }
+
         @media screen and (max-width: 768px) {
             .header-compacta { flex-direction: row; }
             .title-main { font-size: 1.1rem !important; margin: 0 !important; }
@@ -83,13 +88,12 @@
             <table class="table is-fullwidth is-hoverable is-narrow is-striped">
                 <thead>
                     <tr>
-                        <th style="width: 50px;">Nº</th>
-                        <th>Nome do Obreiro</th>
-                        <th>Congregação</th>
+                        <th style="width: 45px;" class="has-text-centered">Nº</th>
+                        <th>Nome obreiro / Congregação</th>
                     </tr>
                 </thead>
                 <tbody id="tabelaBody">
-                    <tr><td colspan="3" class="has-text-centered">Aguardando dados...</td></tr>
+                    <tr><td colspan="2" class="has-text-centered py-4">Aguardando dados...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -148,12 +152,27 @@
         document.getElementById('totalReg').innerText = `${lista.length} Registros`;
         corpo.innerHTML = '';
         
+        if (lista.length === 0) {
+            corpo.innerHTML = '<tr><td colspan="2" class="has-text-centered py-4">Nenhum resultado encontrado.</td></tr>';
+            return;
+        }
+
         lista.forEach((item, index) => {
             const tr = document.createElement('tr');
+            tr.className = "tr-clicavel";
+            tr.onclick = () => abrirFicha(index);
+            
             tr.innerHTML = `
-                <td class="is-size-7 has-text-grey">${index + 1}</td>
-                <td class="nome-link" onclick="abrirFicha(${index})">${item[1]}</td>
-                <td>${item[16] || '-'}</td>
+                <td class="has-text-centered has-text-grey-light is-size-7" style="vertical-align: middle;">
+                    ${index + 1}
+                </td>
+                <td style="padding: 10px 8px;">
+                    <div class="nome-link">${item[1]}</div>
+                    <div class="cong-sub">
+                        <i class="fas fa-church mr-1 has-text-grey-lighter"></i>
+                        ${item[16] || 'Congregação não informada'}
+                    </div>
+                </td>
             `;
             corpo.appendChild(tr);
         });
