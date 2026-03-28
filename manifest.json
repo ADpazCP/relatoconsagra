@@ -1,7 +1,7 @@
 {
   "short_name": "Relatório Consagrandos",
-  "name": "ADPAZ - Gestão de Consagrados",
-  "description": "Sistema de consulta e gestão de membros ADPAZ",
+  "name": "ADPAZ - Relatório de Consagrandos",
+  "description": "Sistema de gestão de novos obreiros ADPAZ",
   "icons": [
     {
       "src": "logo-icon.png",
