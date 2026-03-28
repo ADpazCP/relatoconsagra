@@ -2,8 +2,16 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SISTEMA ADPAZ - Gestão de Consagrados</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3273dc">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="logo-icon.png">
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -32,7 +40,6 @@
         .detail-label { font-size: 0.65rem; color: #888; text-transform: uppercase; font-weight: bold; margin-bottom: 2px; }
         .detail-value { font-size: 1rem; color: #333; }
         
-        /* Ajuste para toque no celular */
         .tr-clicavel { cursor: pointer; transition: background 0.2s; }
         .tr-clicavel:active { background-color: #f5faff; }
 
@@ -74,7 +81,7 @@
                 <label class="label is-small">Cargo</label>
                 <div class="select is-small is-fullwidth">
                     <select id="fCargo" onchange="filtrar()"><option value="">Todos</option></select>
-                </div> 
+                </div>
             </div>
             <div class="column is-3-tablet is-4-mobile">
                 <label class="label is-small">Critério</label>
@@ -89,7 +96,7 @@
                 <thead>
                     <tr>
                         <th style="width: 45px;" class="has-text-centered">Nº</th>
-                        <th>Nome obreiro / Congregação</th>
+                        <th>Dados do Obreiro</th>
                     </tr>
                 </thead>
                 <tbody id="tabelaBody">
@@ -115,11 +122,22 @@
 </div>
 
 <script>
+    // 1. REGISTRO DO SERVICE WORKER (PARA PWA)
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Gestão PWA: Rodando'))
+                .catch(err => console.error('Erro Service Worker:', err));
+        });
+    }
+
     const URL_APP = "https://script.google.com/macros/s/AKfycby8cJYoRKlK94FDzJwjWyHGZxi14m2P9ZpIF3Pmemc-hOXOl-U5uKYsXNx1QNXUI0dV/exec";
     let dadosLocais = [];
 
     window.onload = carregarDados;
 
+    // ... Resto das suas funções (carregarDados, receberDados, renderizar, filtrar, abrirFicha) ...
+    // Mantenha exatamente como estava no seu código original
     function carregarDados() {
         document.getElementById('btnSync').classList.add('is-loading');
         const script = document.createElement('script');
@@ -151,27 +169,19 @@
         const corpo = document.getElementById('tabelaBody');
         document.getElementById('totalReg').innerText = `${lista.length} Registros`;
         corpo.innerHTML = '';
-        
         if (lista.length === 0) {
             corpo.innerHTML = '<tr><td colspan="2" class="has-text-centered py-4">Nenhum resultado encontrado.</td></tr>';
             return;
         }
-
         lista.forEach((item, index) => {
             const tr = document.createElement('tr');
             tr.className = "tr-clicavel";
             tr.onclick = () => abrirFicha(index);
-            
             tr.innerHTML = `
-                <td class="has-text-centered has-text-grey-light is-size-7" style="vertical-align: middle;">
-                    ${index + 1}
-                </td>
+                <td class="has-text-centered has-text-grey-light is-size-7" style="vertical-align: middle;">${index + 1}</td>
                 <td style="padding: 10px 8px;">
                     <div class="nome-link">${item[1]}</div>
-                    <div class="cong-sub">
-                        <i class="fas fa-church mr-1 has-text-grey-lighter"></i>
-                        ${item[16] || 'Congregação não informada'}
-                    </div>
+                    <div class="cong-sub"><i class="fas fa-church mr-1 has-text-grey-lighter"></i>${item[16] || 'Não informada'}</div>
                 </td>
             `;
             corpo.appendChild(tr);
@@ -183,7 +193,6 @@
         const cong = document.getElementById('fCong').value;
         const cargo = document.getElementById('fCargo').value;
         const crit = document.getElementById('fCrit').value;
-
         const resultado = dadosLocais.filter(l => {
             return l[1].toString().toUpperCase().includes(nome) &&
                    (cong === "" || l[16] === cong) &&
@@ -196,61 +205,19 @@
     function abrirFicha(idx) {
         const p = dadosLocais[idx];
         const box = document.getElementById('conteudoFicha');
-        const estadoCivil = p[7] || '---';
         const nomeConjuge = p[8] && p[8].trim() !== "" && p[8].toUpperCase() !== "NÃO INFORMADO" ? p[8] : null;
-
         box.innerHTML = `
-            <div class="detail-item">
-                <p class="detail-label">Nome Obreiro</p>
-                <p class="detail-value has-text-weight-bold has-text-link is-size-5">${p[1]}</p>
-            </div>
-            
-            <div class="detail-item">
-                <p class="detail-label">Cargo / Critério</p>
-                <p class="detail-value has-text-weight-semibold">
-                    ${p[17]} <span class="has-text-grey">(${p[18]})</span>
-                </p>
-            </div>
-
-            <div class="detail-item">
-                <p class="detail-label">Estado Civil ${nomeConjuge ? '/ Cônjuge' : ''}</p>
-                <p class="detail-value">
-                    <span class="has-text-weight-semibold">${estadoCivil}</span>
-                    ${nomeConjuge ? `<span class="has-text-grey mx-2">|</span> ${nomeConjuge}` : ''}
-                </p>
-            </div>
-
-            <div class="detail-item">
-                <p class="detail-label">Telefone de Contato</p>
-                <p class="detail-value">${p[15] || '---'}</p>
-            </div>
-
-            <div class="detail-item">
-                <p class="detail-label">Localização (Endereço)</p>
-                <p class="detail-value is-size-7">
-                    <i class="fas fa-map-marker-alt has-text-danger mr-1"></i>
-                    ${p[9] || ''}, ${p[11] || ''} - ${p[13] || ''}/${p[14] || ''}
-                </p>
-            </div>
-
-            <div class="detail-item">
-                <p class="detail-label">Congregação Vinculada</p>
-                <p class="detail-value">${p[16] || '---'}</p>
-            </div>
-
-            <div class="detail-item">
-                <p class="detail-label">Número de Registro (ID)</p>
-                <p class="detail-value has-text-weight-bold is-family-monospace" style="color: #444;">
-                    ${p[20] || 'S/N'}
-                </p>
-            </div>
+            <div class="detail-item"><p class="detail-label">Nome Obreiro</p><p class="detail-value has-text-weight-bold has-text-link">${p[1]}</p></div>
+            <div class="detail-item"><p class="detail-label">Cargo / Critério</p><p class="detail-value">${p[17]} (${p[18]})</p></div>
+            <div class="detail-item"><p class="detail-label">Estado Civil / Cônjuge</p><p class="detail-value">${p[7] || '---'} ${nomeConjuge ? `| ${nomeConjuge}` : ''}</p></div>
+            <div class="detail-item"><p class="detail-label">Telefone</p><p class="detail-value">${p[15] || '---'}</p></div>
+            <div class="detail-item"><p class="detail-label">Localização</p><p class="detail-value is-size-7">${p[9] || ''}, ${p[11] || ''} - ${p[13] || ''}/${p[14] || ''}</p></div>
+            <div class="detail-item"><p class="detail-label">Registro (ID)</p><p class="detail-value is-family-monospace">${p[20] || 'S/N'}</p></div>
         `;
         document.getElementById('modalFicha').classList.add('is-active');
     }
 
-    function fecharModal() {
-        document.getElementById('modalFicha').classList.remove('is-active');
-    }
+    function fecharModal() { document.getElementById('modalFicha').classList.remove('is-active'); }
 </script>
 </body>
 </html>
