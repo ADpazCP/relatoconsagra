@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA ADPAZ - Gestão de Consagrados</title>
+    <title>ADPAZ - Relatório de Consagrandos</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#3273dc">
@@ -207,7 +207,7 @@
         const box = document.getElementById('conteudoFicha');
         const nomeConjuge = p[8] && p[8].trim() !== "" && p[8].toUpperCase() !== "NÃO INFORMADO" ? p[8] : null;
         box.innerHTML = `
-            <div class="detail-item"><p class="detail-label">Nome Obreiro</p><p class="detail-value has-text-weight-bold has-text-link">${p[1]}</p></div>
+            <div class="detail-item"><p class="detail-label">Consagrando / Congregações</p><p class="detail-value has-text-weight-bold has-text-link">${p[1]}</p></div>
             <div class="detail-item"><p class="detail-label">Cargo / Critério</p><p class="detail-value">${p[17]} (${p[18]})</p></div>
             <div class="detail-item"><p class="detail-label">Estado Civil / Cônjuge</p><p class="detail-value">${p[7] || '---'} ${nomeConjuge ? `| ${nomeConjuge}` : ''}</p></div>
             <div class="detail-item"><p class="detail-label">Telefone</p><p class="detail-value">${p[15] || '---'}</p></div>
