@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADPAZ - Relatório de Consagrandos</title>
+    <title>SISTEMA ADPAZ - Gestão</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#3273dc">
@@ -57,7 +57,7 @@
             </div>
             <div class="is-flex is-align-items-center">
                 <span class="badge-count" id="totalReg">0 Registros</span>
-                <button class="button is-link is-small btn-sync" id="btnSync" onclick="carregarDados()" title="Sincronizar Planilha">
+                <button class="button is-link is-small btn-sync" id="btnSync" onclick="carregarDados()" title="Sincronizar">
                     <span class="icon"><i class="fas fa-sync-alt"></i></span>
                 </button>
             </div>
@@ -66,7 +66,7 @@
         <div class="columns is-multiline is-variable is-1 mb-4">
             <div class="column is-3-tablet is-12-mobile">
                 <label class="label is-small">Pesquisar Nome</label>
-                <input class="input is-small" id="fNome" type="text" placeholder="Digite para buscar..." oninput="filtrar()">
+                <input class="input is-small" id="fNome" type="text" placeholder="Buscar..." oninput="filtrar()">
             </div>
             <div class="column is-3-tablet is-4-mobile">
                 <label class="label is-small">Congregação</label>
@@ -97,7 +97,7 @@
                     </tr>
                 </thead>
                 <tbody id="tabelaBody">
-                    <tr><td colspan="2" class="has-text-centered py-4">Aguardando dados...</td></tr>
+                    <tr><td colspan="2" class="has-text-centered py-4">Carregando dados da nuvem...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -108,8 +108,8 @@
     <div class="modal-background" onclick="fecharModal()"></div>
     <div class="modal-card">
         <header class="modal-card-head py-2">
-            <p class="modal-card-title is-size-6">Ficha Individual do Consagrado</p>
-            <button class="delete" aria-label="close" onclick="fecharModal()"></button>
+            <p class="modal-card-title is-size-6">Ficha do Consagrado</p>
+            <button class="delete" onclick="fecharModal()"></button>
         </header>
         <section class="modal-card-body px-5" id="conteudoFicha"></section>
         <footer class="modal-card-foot py-2 is-justify-content-center">
@@ -140,129 +140,94 @@
         renderizar(dados);
     }
 
-    function gerarFiltroDinamico(idElemento, colunaIndex, textoPadrao) {
-        const select = document.getElementById(idElemento);
-        const valoresUnicos = [...new Set(dadosLocais.map(item => item[colunaIndex]))]
-                              .filter(v => v && v.toString().trim() !== "")
-                              .sort();
-        select.innerHTML = `<option value="">${textoPadrao}</option>`;
-        valoresUnicos.forEach(valor => { 
-            select.innerHTML += `<option value="${valor}">${valor}</option>`; 
-        });
+    function gerarFiltroDinamico(id, col, txt) {
+        const sel = document.getElementById(id);
+        const vals = [...new Set(dadosLocais.map(i => i[col]))].filter(v => v && v.trim() !== "").sort();
+        sel.innerHTML = `<option value="">${txt}</option>`;
+        vals.forEach(v => sel.innerHTML += `<option value="${v}">${v}</option>`);
     }
 
     function renderizar(lista) {
         const corpo = document.getElementById('tabelaBody');
         document.getElementById('totalReg').innerText = `${lista.length} Registros`;
         corpo.innerHTML = '';
-        
         if (lista.length === 0) {
-            corpo.innerHTML = '<tr><td colspan="2" class="has-text-centered py-4">Nenhum resultado encontrado.</td></tr>';
+            corpo.innerHTML = '<tr><td colspan="2" class="has-text-centered py-4">Nenhum resultado.</td></tr>';
             return;
         }
-
         lista.forEach((item, index) => {
             const tr = document.createElement('tr');
             tr.className = "tr-clicavel";
-            
-            // CORREÇÃO: Passa o objeto completo 'item' para a função, não o índice da array
-            tr.onclick = () => abrirFicha(item);
-            
+            tr.onclick = () => abrirFicha(item); // Correção: Passa o objeto completo
             tr.innerHTML = `
-                <td class="has-text-centered has-text-grey-light is-size-7" style="vertical-align: middle;">
-                    ${index + 1}
-                </td>
+                <td class="has-text-centered has-text-grey-light is-size-7" style="vertical-align: middle;">${index + 1}</td>
                 <td style="padding: 10px 8px;">
                     <div class="nome-link">${item[1]}</div>
-                    <div class="cong-sub">
-                        <i class="fas fa-church mr-1 has-text-grey-lighter"></i>
-                        ${item[16] || 'Congregação não informada'}
-                    </div>
-                </td>
-            `;
+                    <div class="cong-sub"><i class="fas fa-church mr-1"></i>${item[16] || '---'}</div>
+                </td>`;
             corpo.appendChild(tr);
         });
     }
 
     function filtrar() {
-        const nome = document.getElementById('fNome').value.toUpperCase();
-        const cong = document.getElementById('fCong').value;
-        const cargo = document.getElementById('fCargo').value;
-        const crit = document.getElementById('fCrit').value;
-
-        const resultado = dadosLocais.filter(l => {
-            return l[1].toString().toUpperCase().includes(nome) &&
-                   (cong === "" || l[16] === cong) &&
-                   (cargo === "" || l[17] === cargo) &&
-                   (crit === "" || l[18] === crit);
-        });
-        renderizar(resultado);
+        const n = document.getElementById('fNome').value.toUpperCase();
+        const c = document.getElementById('fCong').value;
+        const g = document.getElementById('fCargo').value;
+        const cr = document.getElementById('fCrit').value;
+        const res = dadosLocais.filter(l => 
+            l[1].toString().toUpperCase().includes(n) && 
+            (c === "" || l[16] === c) && 
+            (g === "" || l[17] === g) && 
+            (cr === "" || l[18] === cr)
+        );
+        renderizar(res);
     }
 
     function abrirFicha(p) {
         const box = document.getElementById('conteudoFicha');
         const estadoCivil = p[7] || '---';
         const nomeConjuge = p[8] && p[8].trim() !== "" && p[8].toUpperCase() !== "NÃO INFORMADO" ? p[8] : null;
+        const pastor = p[19] || 'Não informado'; // Coluna T (índice 19)
 
         box.innerHTML = `
             <div class="detail-item">
                 <p class="detail-label">Nome Obreiro</p>
                 <p class="detail-value has-text-weight-bold has-text-link is-size-5">${p[1]}</p>
             </div>
-            
             <div class="detail-item">
                 <p class="detail-label">Cargo / Critério</p>
-                <p class="detail-value has-text-weight-semibold">
-                    ${p[17]} <span class="has-text-grey">(${p[18]})</span>
-                </p>
+                <p class="detail-value">${p[17]} <span class="has-text-grey">(${p[18]})</span></p>
             </div>
-
             <div class="detail-item">
                 <p class="detail-label">Estado Civil ${nomeConjuge ? '/ Cônjuge' : ''}</p>
-                <p class="detail-value">
-                    <span class="has-text-weight-semibold">${estadoCivil}</span>
-                    ${nomeConjuge ? `<span class="has-text-grey mx-2">|</span> ${nomeConjuge}` : ''}
-                </p>
+                <p class="detail-value"><strong>${estadoCivil}</strong> ${nomeConjuge ? `<span class="has-text-grey mx-2">|</span> ${nomeConjuge}` : ''}</p>
             </div>
-
             <div class="detail-item">
-                <p class="detail-label">Telefone de Contato</p>
+                <p class="detail-label">Telefone</p>
                 <p class="detail-value">${p[15] || '---'}</p>
             </div>
-
             <div class="detail-item">
-                <p class="detail-label">Localização (Endereço)</p>
-                <p class="detail-value is-size-7">
-                    <i class="fas fa-map-marker-alt has-text-danger mr-1"></i>
-                    ${p[9] || ''}, ${p[11] || ''} - ${p[13] || ''}/${p[14] || ''}
-                </p>
+                <p class="detail-label">Endereço</p>
+                <p class="detail-value is-size-7"><i class="fas fa-map-marker-alt has-text-danger mr-1"></i> ${p[9] || ''}, ${p[11] || ''} - ${p[13] || ''}/${p[14] || ''}</p>
             </div>
-
             <div class="detail-item">
                 <p class="detail-label">Congregação Vinculada</p>
-                <p class="detail-value">${p[16] || '---'}</p>
+                <p class="detail-value">${p[16] || '---'} <span class="has-text-grey-light">-</span> <strong>Pr. ${pastor}</strong></p>
             </div>
-
             <div class="detail-item">
                 <p class="detail-label">Número de Registro (ID)</p>
-                <p class="detail-value has-text-weight-bold is-family-monospace" style="color: #444;">
-                    ${p[20] || 'S/N'}
-                </p>
+                <p class="detail-value has-text-weight-bold is-family-monospace">${p[20] || 'S/N'}</p>
             </div>
         `;
         document.getElementById('modalFicha').classList.add('is-active');
     }
 
-    function fecharModal() {
-        document.getElementById('modalFicha').classList.remove('is-active');
-    }
+    function fecharModal() { document.getElementById('modalFicha').classList.remove('is-active'); }
 
-    // REGISTRO DO SERVICE WORKER (Para funcionamento como APP)
+    // Service Worker Registro
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('Service Worker registrado!', reg))
-                .catch(err => console.error('Erro ao registrar SW', err));
+            navigator.serviceWorker.register('sw.js').catch(err => console.log('Erro SW:', err));
         });
     }
 </script>
